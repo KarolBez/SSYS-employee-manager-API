@@ -1,8 +1,13 @@
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
+from datetime import date
+from django.db.models.functions import ExtractYear
 from .models import Employee
+from django.utils import timezone
+from django.db.models import F, ExpressionWrapper, IntegerField
 from .serializers import EmployeeSerializer
 from django.db.models import Avg, Min, Max
+
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
@@ -11,16 +16,24 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 class AgeReportView(generics.GenericAPIView):
     def get(self, request):
         employees = Employee.objects.all()
-        youngest = employees.order_by('birth_date').first()
-        oldest = employees.order_by('-birth_date').first()
-        average_age = employees.aggregate(Avg('birth_date'))['birth_date__avg']
+        today = date.today()
+
+        # Calcula a idade de cada funcionário considerando apenas o ano atual e o ano de nascimento
+        employees_with_age = employees.annotate(
+            age=today.year - ExtractYear(F('birth_date'))
+        )
+
+        youngest = employees_with_age.order_by('age').first()
+        oldest = employees_with_age.order_by('-age').first()
+        average_age = round(employees_with_age.aggregate(average_age=Avg('age'))['average_age'], 2)
+
         data = {
             "younger": EmployeeSerializer(youngest).data,
             "older": EmployeeSerializer(oldest).data,
-            "average": average_age.strftime('%Y-%m-%d') if average_age else None
+            "average": average_age
         }
         return Response(data)
-
+    
 class SalaryReportView(generics.GenericAPIView):
     def get(self, request):
         employees = Employee.objects.all()
