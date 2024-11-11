@@ -34,12 +34,6 @@ Copiar código
 git clone https://github.com/seu_usuario/ssys-employee-manager.git
 cd ssys-employee-manager
 Crie um ambiente virtual e ative-o:
-
-bash
-Copiar código
-python -m venv venv
-source venv/bin/activate   # Linux/macOS
-venv\Scripts\activate      # Windows
 Instale as dependências do projeto:
 
 bash
@@ -50,17 +44,17 @@ Execute as migrações do banco de dados para configurar o banco inicial:
 
 bash
 Copiar código
-python manage.py migrate
+docker-compose exec web python manage.py migrate
 Crie um superusuário para acessar o Django Admin:
 
 bash
 Copiar código
-python manage.py createsuperuser
+docker-compose exec web python manage.py createsuperuser
 Inicie o servidor de desenvolvimento:
 
 bash
 Copiar código
-python manage.py runserver
+docker-compose up 
 A API estará acessível em http://localhost:8000.
 
 Autenticação
