@@ -1,106 +1,134 @@
 SSYS Employee Manager API
-A SSYS Employee Manager API é uma aplicação para gerenciar informações de funcionários da SSYS, com operações CRUD, autenticação baseada em token e geração de relatórios de idade e faixa salarial.
+O SSYS Employee Manager API é uma aplicação desenvolvida para gerenciar informações de funcionários e relatórios, com autenticação para acesso seguro. A API permite operações de CRUD (Criar, Ler, Atualizar e Excluir) para gerenciar funcionários e possui endpoints para relatórios de idade e faixa salarial.
 
---Índice:
-•Descrição do Projeto
-•Pré-requisitos
-•Instalação e Configuração
-•Configuração do Banco de Dados
-•Autenticação
-•Endpoints da API
-•Testando a API
-•Executando com Docker
-•Possíveis Erros e Soluções
-•Descrição do Projeto
-•O projeto SSYS Employee Manager API permite:
-
-Criar, listar, atualizar e deletar funcionários (CRUD).
-Gerar relatórios de idade (mais jovem, mais velho e média).
-Gerar relatórios de faixa salarial (menor, maior e média).
-Controlar o acesso à API com autenticação por token.
-Pré-requisitos
-Para rodar o projeto localmente, você precisa dos seguintes softwares instalados:
-
-Python 3.10+
-Django 4.2+
-Django REST Framework
-djangorestframework-authtoken
-Docker e Docker Compose (opcional para ambiente com container)
-Instalação e Configuração
-Clone o repositório em sua máquina local:
+Sumário
+Requisitos
+Configuração do Projeto
+Executando o Projeto
+Endpoints
+Autenticação
+Exemplos de Requisições
+Requisitos
+Docker: Certifique-se de que o Docker está instalado em seu sistema.
+Docker Compose: O Docker Compose deve estar disponível para facilitar a orquestração dos containers.
+Configuração do Projeto
+1. Clone o Repositório
+Primeiro, clone este repositório em sua máquina local:
 
 bash
 Copiar código
-git clone https://github.com/seu_usuario/ssys-employee-manager.git
-cd ssys-employee-manager
-Crie um ambiente virtual e ative-o:
-Instale as dependências do projeto:
+git clone <URL-do-repositório>
+cd ssys-employee-manager-api
+2. Estrutura do Projeto
+No diretório raiz do projeto, você encontrará os seguintes arquivos importantes:
+
+Dockerfile: Define a imagem Docker para o projeto.
+docker-compose.yml: Orquestra os serviços necessários (web e banco de dados).
+requirements.txt: Lista de dependências do projeto.
+manage.py: Comando principal para a aplicação Django.
+3. Configurar Variáveis de Ambiente
+Para configurar as variáveis de ambiente, crie um arquivo .env na raiz do projeto com o seguinte conteúdo:
+
+plaintext
+Copiar código
+# Django settings
+DJANGO_SECRET_KEY='sua_chave_secreta'
+DJANGO_DEBUG=True
+
+# Database settings
+POSTGRES_DB=ssys_db
+POSTGRES_USER=ssys_user
+POSTGRES_PASSWORD=ssys_password
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+Executando o Projeto
+1. Construir e Iniciar os Containers
+Para iniciar a aplicação e o banco de dados usando Docker Compose, execute:
 
 bash
 Copiar código
-pip install -r requirements.txt
-Configuração do Banco de Dados
-Execute as migrações do banco de dados para configurar o banco inicial:
+docker-compose up -d --build
+Esse comando criará e iniciará os containers em segundo plano.
+
+2. Aplicar Migrações do Banco de Dados
+Depois que os containers estiverem ativos, execute as migrações do Django para configurar o banco de dados:
 
 bash
 Copiar código
 docker-compose exec web python manage.py migrate
-Crie um superusuário para acessar o Django Admin:
+3. Criar um Superusuário (opcional)
+Para acessar o Django Admin ou autenticar usuários, você pode criar um superusuário:
 
 bash
 Copiar código
 docker-compose exec web python manage.py createsuperuser
-Inicie o servidor de desenvolvimento:
+Endpoints
+A API possui os seguintes endpoints principais:
 
-bash
-Copiar código
-docker-compose up 
-A API estará acessível em http://localhost:8000.
-
+1. Employees CRUD
+GET /employees/: Listar todos os funcionários.
+POST /employees/: Criar um novo funcionário.
+GET /employees/{id}/: Detalhes de um funcionário específico.
+PUT /employees/{id}/: Atualizar dados de um funcionário.
+DELETE /employees/{id}/: Excluir um funcionário.
+2. Relatórios
+GET /reports/employees/age/: Relatório de idade dos funcionários (mais novo, mais velho, média de idade).
+GET /reports/employees/salary/: Relatório salarial dos funcionários (menor, maior e média salarial).
 Autenticação
-Esta API usa autenticação por Token para proteger os endpoints. Siga os passos abaixo para gerar e usar um token:
+Esta API utiliza Token Authentication. Para acessar os endpoints protegidos, é necessário:
 
-Obter Token: Envie uma requisição POST para o endpoint /api-token-auth/ com o username e password do usuário.
+Obter um token de autenticação enviando uma requisição POST para /api-token-auth/ com username e password no corpo da requisição.
 
-Exemplo de requisição cURL:
+Inclua o token no cabeçalho Authorization nas próximas requisições, com o formato:
+
+makefile
+Copiar código
+Authorization: Token SEU_TOKEN_AQUI
+Exemplos de Requisições
+1. Autenticação
+Para obter um token de autenticação:
 
 bash
 Copiar código
-curl -X POST -d "username=seu_usuario&password=sua_senha" http://localhost:8000/api-token-auth/
+curl -X POST http://localhost:8000/api-token-auth/ \
+     -d "username=seu_usuario" \
+     -d "password=sua_senha"
 Resposta esperada:
 
 json
 Copiar código
 {
-  "token": "seu_token_aqui"
+    "token": "seu_token_gerado"
 }
-Usar Token para autenticação: Inclua o token no cabeçalho Authorization das requisições protegidas, no formato Token <seu_token_aqui>.
+2. Listar Funcionários
+Requisição:
 
-Exemplo no Postman:
-makefile
+bash
 Copiar código
-Key: Authorization
-Value: Token seu_token_aqui
-Endpoints da API
-1. CRUD de Funcionários
-GET /employees/ - Lista todos os funcionários.
-POST /employees/ - Cria um novo funcionário.
-GET /employees/{id}/ - Mostra detalhes de um funcionário específico.
-PUT /employees/{id}/ - Atualiza as informações de um funcionário.
-DELETE /employees/{id}/ - Remove um funcionário.
-Exemplo de Requisição POST para /employees/
-json
-Copiar código
-{
-    "name": "Anakin Skywalker",
-    "email": "skywalker@ssys.com.br",
-    "department": "Architecture",
-    "salary": 4000.00,
-    "birth_date": "1983-01-01"
-}
-2. Endpoints de Relatórios
-GET /reports/employees/age/ - Relatório de idade, incluindo o mais jovem, o mais velho e a média de idade.
+curl -X GET http://localhost:8000/employees/ \
+     -H "Authorization: Token SEU_TOKEN_AQUI"
+3. Criar um Funcionário
+Requisição:
 
+bash
+Copiar código
+curl -X POST http://localhost:8000/employees/ \
+     -H "Authorization: Token SEU_TOKEN_AQUI" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "Anakin Skywalker",
+           "email": "skywalker@ssys.com.br",
+           "department": "Architecture",
+           "salary": "4000.00",
+           "birth_date": "1983-01-01"
+         }'
+4. Relatório de Idade
+Requisição:
+
+bash
+Copiar código
+curl -X GET http://localhost:8000/reports/employees/age/ \
+     -H "Authorization: Token SEU_TOKEN_AQUI"
 Resposta esperada:
 
 json
@@ -124,8 +152,13 @@ Copiar código
     },
     "average": "40.00"
 }
-GET /reports/employees/salary/ - Relatório salarial, com o menor, o maior e a média salarial.
+5. Relatório Salarial
+Requisição:
 
+bash
+Copiar código
+curl -X GET http://localhost:8000/reports/employees/salary/ \
+     -H "Authorization: Token SEU_TOKEN_AQUI"
 Resposta esperada:
 
 json
@@ -149,34 +182,16 @@ Copiar código
     },
     "average": "4000.00"
 }
-Testando a API
-Use ferramentas como Postman ou cURL para testar os endpoints da API.
-
-Exemplo de Requisição cURL para listar funcionários:
-bash
-Copiar código
-curl -H "Authorization: Token <seu_token_aqui>" http://localhost:8000/employees/
-Exemplo de Requisição cURL para o relatório de idade:
-bash
-Copiar código
-curl -H "Authorization: Token <seu_token_aqui>" http://localhost:8000/reports/employees/age/
-Executando com Docker
-Arquivo docker-compose.yml: O projeto inclui um docker-compose.yml para facilitar o ambiente de desenvolvimento com Docker.
-
-Suba o ambiente de desenvolvimento com Docker Compose:
-
-bash
-Copiar código
-docker-compose up --build
-Isso irá iniciar o servidor na porta 8000, acessível em http://localhost:8000.
-
-Para encerrar os containers:
+Encerrando o Ambiente
+Para parar os containers e liberar os recursos:
 
 bash
 Copiar código
 docker-compose down
-Possíveis Erros e Soluções
-Erro ao obter Token: Verifique se o usuário existe e as credenciais estão corretas.
-Erro 401 Unauthorized: Assegure-se de que o token está incluído corretamente no cabeçalho Authorization.
-Erro de conexão: Verifique se o servidor está em execução e disponível na porta 8000.
-Este guia cobre os passos necessários para configurar, executar e testar a SSYS Employee Manager API.
+Esse README cobre desde a configuração inicial até o uso dos endpoints da API.
+
+
+
+
+
+
