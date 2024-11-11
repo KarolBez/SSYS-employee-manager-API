@@ -40,7 +40,5 @@ SSYS Employee Manager é uma API para gerenciar informações de funcionários e
 •Docker - Containerização da aplicação.
 •PostgreSQL - Banco de dados.
 
-6-
-
 
 
